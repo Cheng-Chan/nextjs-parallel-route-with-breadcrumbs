@@ -434,3 +434,17 @@ The catch-all experiment is preserved at commit `7e15cf1`, while `main` was rest
 ### Phase boundary
 
 Phase 9 evaluates but does not adopt catch-all breadcrumb generation. It introduces no global pathname parser and makes no production change.
+
+## Water Vending breadcrumb presentation update
+
+The shared breadcrumb renderer now uses a compact white surface, muted parent links, `>` separators hidden from assistive technology, and a dark bold current-page label. Its semantic `nav`, ordered list, parent links, and non-link `aria-current="page"` behavior remain unchanged.
+
+Water Vending trails intentionally present the feature and page type rather than the full dashboard and entity hierarchy:
+
+- Feature root: **Water Vending**
+- Detail: **Water Vending > Detail**
+- System Log: **Water Vending > System Log**
+- Create: **Water Vending > Create**
+- Edit: **Water Vending > Edit**
+
+The new `/dashboard/water-vending/[code]/system-log` page uses the same asynchronous server-only entity lookup, loading boundary, and not-found behavior as Detail and Edit. Validity remains server-resolved even though the visible breadcrumb no longer exposes the entity code.

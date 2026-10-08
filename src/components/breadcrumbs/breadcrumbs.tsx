@@ -38,33 +38,36 @@ export function Breadcrumbs({ items, pending = false }: BreadcrumbsProps) {
       aria-busy={pending || undefined}
       data-breadcrumb-loading={pending ? "true" : undefined}
       data-breadcrumb-trail={pending ? undefined : trail}
+      className="rounded-lg bg-white px-4 py-3 text-slate-900 shadow-sm ring-1 ring-slate-200"
     >
-      <ol className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+      <ol className="flex min-h-6 max-w-full flex-wrap items-center gap-x-2 gap-y-1 text-sm">
         {items.map((item, index) => (
           <Fragment key={`${item.href ?? "text"}:${item.label}:${index}`}>
             {index > 0 ? (
               <li
                 aria-hidden="true"
                 role="presentation"
-                className="shrink-0 text-slate-600"
+                className="shrink-0 text-slate-400"
               >
-                /
+                &gt;
               </li>
             ) : null}
             <li className="min-w-0 max-w-full break-words">
               {item.current ? (
-                <span aria-current="page" className="font-medium text-slate-200">
+                <span aria-current="page" className="font-semibold text-slate-900">
                   {item.label}
                 </span>
               ) : item.href ? (
                 <Link
                   href={item.href}
-                  className="text-cyan-400 transition hover:text-cyan-300"
+                  className="text-slate-500 transition hover:text-slate-900"
                 >
                   {item.label}
                 </Link>
               ) : (
-                <span className={pending ? "animate-pulse text-slate-400" : undefined}>
+                <span
+                  className={pending ? "animate-pulse text-slate-500" : undefined}
+                >
                   {item.label}
                 </span>
               )}

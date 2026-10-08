@@ -28,15 +28,11 @@ async function resolveBreadcrumbItems(
   }
 
   if (segments.length === 1) {
-    return [
-      dashboardBreadcrumbLink,
-      { label: "Water Vending", current: true },
-    ];
+    return [{ label: "Water Vending", current: true }];
   }
 
   if (segments.length === 2 && segments[1] === "create") {
     return [
-      dashboardBreadcrumbLink,
       waterVendingBreadcrumbLink,
       { label: "Create", current: true },
     ];
@@ -50,8 +46,9 @@ async function resolveBreadcrumbItems(
 
   const isDetail = segments.length === 2;
   const isEdit = segments.length === 3 && segments[2] === "edit";
+  const isSystemLog = segments.length === 3 && segments[2] === "system-log";
 
-  if (!isDetail && !isEdit) {
+  if (!isDetail && !isEdit && !isSystemLog) {
     return null;
   }
 
@@ -59,7 +56,6 @@ async function resolveBreadcrumbItems(
 
   if (!machine) {
     return [
-      dashboardBreadcrumbLink,
       waterVendingBreadcrumbLink,
       { label: "Vending unit not found", current: true },
     ];
@@ -67,19 +63,20 @@ async function resolveBreadcrumbItems(
 
   if (isDetail) {
     return [
-      dashboardBreadcrumbLink,
       waterVendingBreadcrumbLink,
-      { label: machine.displayCode, current: true },
+      { label: "Detail", current: true },
+    ];
+  }
+
+  if (isSystemLog) {
+    return [
+      waterVendingBreadcrumbLink,
+      { label: "System Log", current: true },
     ];
   }
 
   return [
-    dashboardBreadcrumbLink,
     waterVendingBreadcrumbLink,
-    {
-      label: machine.displayCode,
-      href: `/dashboard/water-vending/${encodeURIComponent(machine.code)}`,
-    },
     { label: "Edit", current: true },
   ];
 }

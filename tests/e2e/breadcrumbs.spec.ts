@@ -181,43 +181,45 @@ test.describe("parallel-route breadcrumbs", () => {
       {
         path: "/dashboard/water-vending",
         expected: {
-          trail: "Dashboard > Water Vending",
+          trail: "Water Vending",
           current: "Water Vending",
-          links: [dashboardLink],
+          links: [],
         },
         source: "catch-all",
       },
       {
         path: "/dashboard/water-vending/create",
         expected: {
-          trail: "Dashboard > Water Vending > Create",
+          trail: "Water Vending > Create",
           current: "Create",
-          links: [dashboardLink, waterVendingLink],
+          links: [waterVendingLink],
         },
         source: "catch-all",
       },
       {
         path: "/dashboard/water-vending/004915",
         expected: {
-          trail: "Dashboard > Water Vending > 004915",
-          current: "004915",
-          links: [dashboardLink, waterVendingLink],
+          trail: "Water Vending > Detail",
+          current: "Detail",
+          links: [waterVendingLink],
         },
         source: "catch-all",
       },
       {
         path: "/dashboard/water-vending/004915/edit",
         expected: {
-          trail: "Dashboard > Water Vending > 004915 > Edit",
+          trail: "Water Vending > Edit",
           current: "Edit",
-          links: [
-            dashboardLink,
-            waterVendingLink,
-            {
-              label: "004915",
-              href: "/dashboard/water-vending/004915",
-            },
-          ],
+          links: [waterVendingLink],
+        },
+        source: "catch-all",
+      },
+      {
+        path: "/dashboard/water-vending/004915/system-log",
+        expected: {
+          trail: "Water Vending > System Log",
+          current: "System Log",
+          links: [waterVendingLink],
         },
         source: "catch-all",
       },
@@ -369,25 +371,25 @@ test.describe("parallel-route breadcrumbs", () => {
 
     await page.goto("/dashboard/water-vending");
     await expectBreadcrumb(page, {
-      trail: "Dashboard > Water Vending",
+      trail: "Water Vending",
       current: "Water Vending",
-      links: [dashboardLink],
+      links: [],
     });
 
     await page.getByRole("link", { name: "Create vending unit" }).click();
     await expect(page).toHaveURL(/\/dashboard\/water-vending\/create$/);
     await expectBreadcrumb(page, {
-      trail: "Dashboard > Water Vending > Create",
+      trail: "Water Vending > Create",
       current: "Create",
-      links: [dashboardLink, waterVendingLink],
+      links: [waterVendingLink],
     });
 
     await page.goBack();
     await expect(page).toHaveURL(/\/dashboard\/water-vending$/);
     await expectBreadcrumb(page, {
-      trail: "Dashboard > Water Vending",
+      trail: "Water Vending",
       current: "Water Vending",
-      links: [dashboardLink],
+      links: [],
     });
 
     await expectSlowNavigation(
@@ -397,9 +399,9 @@ test.describe("parallel-route breadcrumbs", () => {
           .getByRole("link", { name: "View vending unit 004915" })
           .click(),
       {
-        trail: "Dashboard > Water Vending > 004915",
-        current: "004915",
-        links: [dashboardLink, waterVendingLink],
+        trail: "Water Vending > Detail",
+        current: "Detail",
+        links: [waterVendingLink],
       },
       '[data-vending-loading="true"]',
       true,
@@ -408,18 +410,11 @@ test.describe("parallel-route breadcrumbs", () => {
 
     await expectSlowNavigation(
       page,
-      () => page.getByRole("link", { name: "Edit vending unit" }).click(),
+      () => page.getByRole("link", { name: "View system log" }).click(),
       {
-        trail: "Dashboard > Water Vending > 004915 > Edit",
-        current: "Edit",
-        links: [
-          dashboardLink,
-          waterVendingLink,
-          {
-            label: "004915",
-            href: "/dashboard/water-vending/004915",
-          },
-        ],
+        trail: "Water Vending > System Log",
+        current: "System Log",
+        links: [waterVendingLink],
       },
       '[data-vending-loading="true"]',
       true,
@@ -429,37 +424,53 @@ test.describe("parallel-route breadcrumbs", () => {
     await page.goBack();
     await expect(page).toHaveURL(/\/dashboard\/water-vending\/004915$/);
     await expectBreadcrumb(page, {
-      trail: "Dashboard > Water Vending > 004915",
-      current: "004915",
-      links: [dashboardLink, waterVendingLink],
+      trail: "Water Vending > Detail",
+      current: "Detail",
+      links: [waterVendingLink],
+    });
+
+    await expectSlowNavigation(
+      page,
+      () => page.getByRole("link", { name: "Edit vending unit" }).click(),
+      {
+        trail: "Water Vending > Edit",
+        current: "Edit",
+        links: [waterVendingLink],
+      },
+      '[data-vending-loading="true"]',
+      true,
+    );
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/dashboard\/water-vending\/004915$/);
+    await expectBreadcrumb(page, {
+      trail: "Water Vending > Detail",
+      current: "Detail",
+      links: [waterVendingLink],
     });
 
     await page.goBack();
     await expect(page).toHaveURL(/\/dashboard\/water-vending$/);
     await expectBreadcrumb(page, {
-      trail: "Dashboard > Water Vending",
+      trail: "Water Vending",
       current: "Water Vending",
-      links: [dashboardLink],
+      links: [],
     });
 
     await page.goForward();
     await expect(page).toHaveURL(/\/dashboard\/water-vending\/004915$/);
     await expectBreadcrumb(page, {
-      trail: "Dashboard > Water Vending > 004915",
-      current: "004915",
-      links: [dashboardLink, waterVendingLink],
+      trail: "Water Vending > Detail",
+      current: "Detail",
+      links: [waterVendingLink],
     });
 
     await page.goForward();
     await expect(page).toHaveURL(/\/dashboard\/water-vending\/004915\/edit$/);
     const editBreadcrumb = {
-      trail: "Dashboard > Water Vending > 004915 > Edit",
+      trail: "Water Vending > Edit",
       current: "Edit",
-      links: [
-        dashboardLink,
-        waterVendingLink,
-        { label: "004915", href: "/dashboard/water-vending/004915" },
-      ],
+      links: [waterVendingLink],
     } as const;
     await expectBreadcrumb(page, editBreadcrumb);
     expect(documentRequests).toBe(1);
@@ -504,6 +515,7 @@ test.describe("parallel-route breadcrumbs", () => {
     for (const path of [
       "/dashboard/water-vending/999999",
       "/dashboard/water-vending/999999/edit",
+      "/dashboard/water-vending/999999/system-log",
     ]) {
       const response = await page.goto(path);
 
@@ -513,9 +525,9 @@ test.describe("parallel-route breadcrumbs", () => {
         page.locator('[data-vending-not-found="true"]'),
       ).toBeVisible();
       await expectBreadcrumb(page, {
-        trail: "Dashboard > Water Vending > Vending unit not found",
+        trail: "Water Vending > Vending unit not found",
         current: "Vending unit not found",
-        links: [dashboardLink, waterVendingLink],
+        links: [waterVendingLink],
       });
       await expectBreadcrumbSource(page, "catch-all");
       await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute(

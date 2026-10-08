@@ -39,13 +39,22 @@ export default async function VendingMachinePage({
           <dd>{machine.status}</dd>
         </div>
       </dl>
-      <Link
-        href={`/dashboard/water-vending/${encodeURIComponent(machine.code)}/edit`}
-        prefetch={false}
-        className="mt-6 inline-block font-semibold text-blue-300 underline underline-offset-4"
-      >
-        Edit vending unit
-      </Link>
+      <div className="mt-6 flex flex-wrap gap-4">
+        <Link
+          href={`/dashboard/water-vending/${encodeURIComponent(machine.code)}/edit`}
+          prefetch={false}
+          className="font-semibold text-blue-300 underline underline-offset-4"
+        >
+          Edit vending unit
+        </Link>
+        <Link
+          href={`/dashboard/water-vending/${encodeURIComponent(machine.code)}/system-log`}
+          prefetch={false}
+          className="font-semibold text-blue-300 underline underline-offset-4"
+        >
+          View system log
+        </Link>
+      </div>
     </section>
   );
 }

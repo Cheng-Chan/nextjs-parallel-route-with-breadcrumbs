@@ -26,6 +26,7 @@ Open [http://localhost:3000](http://localhost:3000), then enter the dashboard.
 - `/dashboard/water-vending/create`
 - `/dashboard/water-vending/[code]`
 - `/dashboard/water-vending/[code]/edit`
+- `/dashboard/water-vending/[code]/system-log`
 
 ## Verification
 

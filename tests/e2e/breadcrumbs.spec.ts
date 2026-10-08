@@ -49,11 +49,30 @@ async function expectBreadcrumb(
   );
 }
 
+async function expectBreadcrumbSource(
+  page: Page,
+  source: "catch-all" | "explicit",
+) {
+  const sourceMarker = page.locator("[data-breadcrumb-source]");
+
+  if (source === "catch-all") {
+    await expect(sourceMarker).toHaveCount(1);
+    await expect(sourceMarker).toHaveAttribute(
+      "data-breadcrumb-source",
+      "catch-all",
+    );
+    return;
+  }
+
+  await expect(sourceMarker).toHaveCount(0);
+}
+
 async function expectSlowNavigation(
   page: Page,
   navigate: () => Promise<void>,
   expected: ExpectedBreadcrumb,
   contentLoadingSelector = '[data-user-loading="true"]',
+  catchAllLoading = false,
 ) {
   await navigate();
 
@@ -64,6 +83,11 @@ async function expectSlowNavigation(
   await expect(loadingBreadcrumb).toHaveAttribute("aria-busy", "true");
   await expect(page.locator(contentLoadingSelector)).toBeVisible();
   await expect(page.locator("[data-breadcrumb-trail]")).toHaveCount(0);
+  if (catchAllLoading) {
+    await expect(
+      page.locator('[data-breadcrumb-source="catch-all-loading"]'),
+    ).toBeVisible();
+  }
 
   await expectBreadcrumb(page, expected);
   await expect(loadingBreadcrumb).toHaveCount(0);
@@ -72,11 +96,16 @@ async function expectSlowNavigation(
 test.describe("parallel-route breadcrumbs", () => {
   test("directly loads every valid static and dynamic route", async ({ page }) => {
     const routes: ReadonlyArray<
-      Readonly<{ path: string; expected: ExpectedBreadcrumb }>
+      Readonly<{
+        path: string;
+        expected: ExpectedBreadcrumb;
+        source: "catch-all" | "explicit";
+      }>
     > = [
       {
         path: "/dashboard",
         expected: { trail: "Dashboard", current: "Dashboard", links: [] },
+        source: "explicit",
       },
       {
         path: "/dashboard/users",
@@ -85,6 +114,7 @@ test.describe("parallel-route breadcrumbs", () => {
           current: "Users",
           links: [dashboardLink],
         },
+        source: "explicit",
       },
       {
         path: "/dashboard/users/create",
@@ -93,6 +123,7 @@ test.describe("parallel-route breadcrumbs", () => {
           current: "Create",
           links: [dashboardLink, usersLink],
         },
+        source: "explicit",
       },
       {
         path: "/dashboard/users/123",
@@ -101,6 +132,7 @@ test.describe("parallel-route breadcrumbs", () => {
           current: "Sokha",
           links: [dashboardLink, usersLink],
         },
+        source: "explicit",
       },
       {
         path: "/dashboard/users/123/edit",
@@ -113,6 +145,7 @@ test.describe("parallel-route breadcrumbs", () => {
             { label: "Sokha", href: "/dashboard/users/123" },
           ],
         },
+        source: "explicit",
       },
       {
         path: "/dashboard/users/456",
@@ -121,6 +154,7 @@ test.describe("parallel-route breadcrumbs", () => {
           current: "Dara",
           links: [dashboardLink, usersLink],
         },
+        source: "explicit",
       },
       {
         path: "/dashboard/users/456/edit",
@@ -133,6 +167,7 @@ test.describe("parallel-route breadcrumbs", () => {
             { label: "Dara", href: "/dashboard/users/456" },
           ],
         },
+        source: "explicit",
       },
       {
         path: "/dashboard/settings",
@@ -141,6 +176,7 @@ test.describe("parallel-route breadcrumbs", () => {
           current: "Settings",
           links: [dashboardLink],
         },
+        source: "catch-all",
       },
       {
         path: "/dashboard/water-vending",
@@ -149,6 +185,7 @@ test.describe("parallel-route breadcrumbs", () => {
           current: "Water Vending",
           links: [dashboardLink],
         },
+        source: "catch-all",
       },
       {
         path: "/dashboard/water-vending/create",
@@ -157,6 +194,7 @@ test.describe("parallel-route breadcrumbs", () => {
           current: "Create",
           links: [dashboardLink, waterVendingLink],
         },
+        source: "catch-all",
       },
       {
         path: "/dashboard/water-vending/004915",
@@ -165,6 +203,7 @@ test.describe("parallel-route breadcrumbs", () => {
           current: "004915",
           links: [dashboardLink, waterVendingLink],
         },
+        source: "catch-all",
       },
       {
         path: "/dashboard/water-vending/004915/edit",
@@ -180,6 +219,7 @@ test.describe("parallel-route breadcrumbs", () => {
             },
           ],
         },
+        source: "catch-all",
       },
     ];
 
@@ -187,6 +227,7 @@ test.describe("parallel-route breadcrumbs", () => {
       const response = await page.goto(route.path);
       expect(response?.status()).toBe(200);
       await expectBreadcrumb(page, route.expected);
+      await expectBreadcrumbSource(page, route.source);
       await expect(page.locator('[data-app-navbar="true"]')).toHaveCount(1);
       await expect(page.locator('[data-app-sidebar="true"]')).toHaveCount(1);
     }
@@ -361,7 +402,9 @@ test.describe("parallel-route breadcrumbs", () => {
         links: [dashboardLink, waterVendingLink],
       },
       '[data-vending-loading="true"]',
+      true,
     );
+    await expectBreadcrumbSource(page, "catch-all");
 
     await expectSlowNavigation(
       page,
@@ -379,7 +422,9 @@ test.describe("parallel-route breadcrumbs", () => {
         ],
       },
       '[data-vending-loading="true"]',
+      true,
     );
+    await expectBreadcrumbSource(page, "catch-all");
 
     await page.goBack();
     await expect(page).toHaveURL(/\/dashboard\/water-vending\/004915$/);
@@ -472,6 +517,7 @@ test.describe("parallel-route breadcrumbs", () => {
         current: "Vending unit not found",
         links: [dashboardLink, waterVendingLink],
       });
+      await expectBreadcrumbSource(page, "catch-all");
       await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute(
         "content",
         "noindex",
@@ -480,5 +526,41 @@ test.describe("parallel-route breadcrumbs", () => {
         page.getByRole("link", { name: "Return to Water Vending" }),
       ).toHaveAttribute("href", "/dashboard/water-vending");
     }
+  });
+
+  test("gives explicit routes precedence and exposes the catch-all fallback", async ({
+    page,
+  }) => {
+    await page.goto("/dashboard/users");
+    await expectBreadcrumb(page, {
+      trail: "Dashboard > Users",
+      current: "Users",
+      links: [dashboardLink],
+    });
+    await expectBreadcrumbSource(page, "explicit");
+
+    const response = await page.goto("/dashboard/catch-all-probe");
+    // A notFound() from the slot marks the whole valid page response as 404.
+    expect(response?.status()).toBe(404);
+    await expect(page.locator('[data-catch-all-probe="true"]')).toBeVisible();
+    await expectBreadcrumb(page, {
+      trail: "Dashboard > Breadcrumb unavailable",
+      current: "Breadcrumb unavailable",
+      links: [dashboardLink],
+    });
+    await expect(
+      page.locator('[data-breadcrumb-source="catch-all-not-found"]'),
+    ).toBeVisible();
+    await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute(
+      "content",
+      "noindex",
+    );
+
+    const refreshed = await page.reload();
+    expect(refreshed?.status()).toBe(404);
+    await expect(page.locator('[data-catch-all-probe="true"]')).toBeVisible();
+    await expect(
+      page.locator('[data-breadcrumb-source="catch-all-not-found"]'),
+    ).toBeVisible();
   });
 });

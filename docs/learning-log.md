@@ -420,3 +420,17 @@ All six scenarios passed against the production build in 29.5 seconds. The WSL h
 ### Phase boundary
 
 Phase 8 validates the architecture with mock data only. It does not connect a vending backend, implement forms or mutations, alter production code, or introduce automatic catch-all breadcrumbs.
+
+## Phase 9: Catch-all breadcrumb evaluation
+
+An isolated `experiment/phase-9-catch-all` branch replaced the explicit Settings and Water Vending breadcrumb pages with `@breadcrumbs/[...segments]`, while Users remained explicit as a precedence control. The catch-all received `segments: string[]` asynchronously and successfully mapped static routes, action segments, vending codes, and Edit routes. Server-only cached vending lookup continued to work.
+
+All six existing production navigation scenarios passed. A seventh probe proved that explicit Users routes take precedence over the catch-all, but also exposed a dangerous fallback: when a valid content route lacked a central breadcrumb mapping, `notFound()` from the breadcrumb slot caused the entire response to be HTTP 404 with `noindex`, even though the valid page and fallback breadcrumb both rendered.
+
+The experiment reduced seven files to three but reduced implementation size by only ten lines, from 143 to 133. The 102-line catch-all page required 11 route-shape decisions and replaced route-local loading and error semantics with centralized branching. The final seven-scenario production suite passed in 33.2 seconds after encoding the observed fallback behavior.
+
+The catch-all experiment is preserved at commit `7e15cf1`, while `main` was restored to the explicit Phase 8 route architecture. The recommendation is to retain explicit breadcrumb routes for feature ownership and failure isolation. Full evidence and comparison are in `docs/phase-9-catch-all-evaluation.md`.
+
+### Phase boundary
+
+Phase 9 evaluates but does not adopt catch-all breadcrumb generation. It introduces no global pathname parser and makes no production change.

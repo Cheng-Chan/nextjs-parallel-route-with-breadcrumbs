@@ -15,8 +15,8 @@ export function AppSidebar() {
       className="border-b border-slate-800 bg-slate-900/50 lg:min-h-screen lg:border-r lg:border-b-0"
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 py-5 sm:px-6 lg:sticky lg:top-0 lg:max-w-none lg:px-6 lg:py-8">
-        <Link href="/" className="text-xl font-bold text-cyan-400">
-          Next Routing Lab
+        <Link href="/" className="text-l font-bold text-cyan-400">
+          Next Parallel Routes Slot
         </Link>
         <nav
           aria-label="Dashboard navigation"
